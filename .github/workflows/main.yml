@@ -41,7 +41,7 @@ jobs:
 
       # Paso 6: Iniciar el servidor
       - name: Start the server
-        run: npm start &
+        run: npm run dev
       
       # Paso 7: Esperar a que el servidor esté listo
       - name: Wait for server to be ready
