@@ -1,9 +1,21 @@
-name: CI/CD Pipeline with Era Test Node
+name: CI/CD Pipeline with Era Test Node and GitHub Pages
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+# Permisos para el GITHUB_TOKEN
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Concurrencia para evitar múltiples despliegues simultáneos
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   test:
@@ -13,7 +25,7 @@ jobs:
     steps:
       # Paso 1: Obtener el código del repositorio
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Paso 2: Instalar dependencias del sistema (si es necesario)
       - name: Install system dependencies
@@ -61,16 +73,20 @@ jobs:
     needs: test
     if: success()
 
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       # Paso 1: Obtener el código del repositorio
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Paso 2: Configurar Node.js
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
 
       # Paso 3: Instalar dependencias
       - name: Install dependencies
@@ -80,10 +96,17 @@ jobs:
       - name: Build project
         run: npm run build
 
-      # Paso 5: Desplegar en GitHub Pages
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      # Paso 5: Configurar GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Paso 6: Subir artefactos para GitHub Pages
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist
-          force_orphan: true  # Fuerza la creación de una rama huérfana
+          path: './dist'  # Cambia 'dist' por la carpeta de tu build
+
+      # Paso 7: Desplegar en GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
