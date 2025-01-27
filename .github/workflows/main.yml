@@ -28,7 +28,7 @@ jobs:
         with:
           mode: 'run'
           port: '4321'
-          showCalls: 'none'  # Simplificamos las opciones
+          showCalls: 'none'
           showStorageLogs: 'none'
           showVmDetails: 'none'
           showGasDetails: 'none'
@@ -48,12 +48,11 @@ jobs:
             echo "No log file found."
           fi
 
-          # Verificar si el proceso está en ejecución
           if pgrep -f "era_test_node"; then
             echo "Era Test Node is running."
           else
             echo "Era Test Node is not running."
-            exit 1  # Falla el job si no está en ejecución
+            exit 1
           fi
 
   deploy:
@@ -71,7 +70,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 22
+          node-version: 18
 
       # Paso 3: Instalar dependencias
       - name: Install dependencies
@@ -87,3 +86,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
+          force_orphan: true  # Fuerza la creación de una rama huérfana
