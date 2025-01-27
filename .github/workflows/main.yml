@@ -1,4 +1,4 @@
-name: CI/CD Pipeline with Era Test Node and GitHub Pages
+name: CI/CD Pipeline with Cypress and GitHub Pages
 
 on:
   push:
@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   test:
-    name: Check if Era Test Node starts
+    name: Run Cypress Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -27,45 +27,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Paso 2: Instalar dependencias del sistema (si es necesario)
-      - name: Install system dependencies
+      # Paso 2: Instalar dependencias
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libssl-dev
+          npm install
+          npm install cypress --save-dev
 
-      # Paso 3: Ejecutar Era Test Node
-      - name: Run Era Test Node
-        id: era_test_node
-        uses: dutterbutter/era-test-node-action@latest
-        with:
-          mode: 'run'
-          port: '4321'
-          showCalls: 'none'
-          showStorageLogs: 'none'
-          showVmDetails: 'none'
-          showGasDetails: 'none'
-          resolveHashes: false
-          log: 'info'
-          logFilePath: 'era_test_node.log'
-          target: 'x86_64-unknown-linux-gnu'
-          releaseTag: 'latest'
-
-      # Paso 4: Verificar si el Era Test Node se está ejecutando
-      - name: Check Era Test Node status
+      # Paso 3: Ejecutar Cypress
+      - name: Run Cypress tests
         run: |
-          if [ -f era_test_node.log ]; then
-            echo "Era Test Node log:"
-            cat era_test_node.log
-          else
-            echo "No log file found."
-          fi
-
-          if pgrep -f "era_test_node"; then
-            echo "Era Test Node is running."
-          else
-            echo "Era Test Node is not running."
-            exit 1
-          fi
+          npx cypress run --headless --browser chrome
 
   deploy:
     name: Deploy to GitHub Pages
